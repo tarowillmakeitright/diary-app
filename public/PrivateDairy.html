@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diary</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root {
+      --main-width: 95%;
+      --max-width: 600px;
+    }
+
+    body {
+      font-family: sans-serif;
+      background-color: white;
+      color: black;
+      transition: background-color 0.3s, color 0.3s;
+      margin: 0;
+      padding: 20px;
+    }
+
+    body.dark {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+
+    .container {
+      max-width: var(--max-width);
+      width: var(--main-width);
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 1.8em;
+      text-align: center;
+    }
+    
+     h2 {
+      font-size: 1.8em;
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+
+    textarea, input, select {
+      background-color: inherit;
+      color: inherit;
+      border: 1px solid #ccc;
+      padding: 10px;
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 1em;
+    }
+
+    textarea.dark, input.dark, select.dark {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+      border: 1px solid #555;
+    }
+
+    button {
+      margin: 10px 5px 0 0;
+      padding: 10px;
+      font-size: 1em;
+      width: auto;
+      background-color: #eee;
+      border: none;
+      cursor: pointer;
+    }
+
+    body.dark button {
+      background-color: #444;
+      color: #eee;
+    }
+
+    #preview, #allDiaries {
+      margin-top: 30px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      word-wrap: break-word;
+    }
+
+    body.dark #preview, body.dark #allDiaries {
+      background-color: #1e1e1e;
+      border-color: #555;
+    }
+
+    section {
+      margin-bottom: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Diary</h1>
+
+  <h2>・this dairy do not save in database.<h2>
+  <h2>・stranger can't see your dairy.<h2>
+  <h2>・it is yours.</h2>
+
+  <button onclick="toggleDarkMode()">🌙</button>
+  <br><br>
+
+  <label for="date">Date:</label>
+  <input type="date" id="date">
+  <br><br>
+
+  <label for="mood">Today's feeling:</label>
+  <select id="mood">
+    <option value="">--How are you today?--</option>
+    <option value="glad">Glad</option>
+    <option value="sad">Sad</option>
+    <option value="tired">Tired</option>
+    <option value="joyful">Joyful</option>
+    <option value="frustrated">Frustrated</option>
+  </select>
+  <br><br>
+
+  <label for="reason">What caused this feeling?</label>
+  <select id="reason">
+    <option value="">--What caused it?--</option>
+    <option value="work">Work</option>
+    <option value="family">Family</option>
+    <option value="relationship">Relationship</option>
+    <option value="health">Health</option>
+  </select>
+  <br><br>
+
+  <label for="improvement">What did you do to feel better?</label>
+  <select id="improvement">
+    <option value="">--What helped?--</option>
+    <option value="exercise">Exercise</option>
+    <option value="rest">Rest</option>
+    <option value="music">Listening to music</option>
+    <option value="friends">Talking to friends</option>
+  </select>
+  <br><br>
+
+  <label for="diaryText">Diary (Markdown supported):</label>
+  <textarea id="diaryText" rows="10" placeholder="# Write your thoughts here using Markdown..."></textarea>
+  <br><br>
+
+  <button onclick="saveDiary()">Save</button>
+  <button onclick="loadAllDiaries()">🗂 View All</button>
+  <div id="allDiaries"></div>
+  <button onclick="clearDiary()">Delete</button>
+  <br><br>
+
+  <h3>📄 Preview</h3>
+  <div id="preview"></div>
+
+  <script>
+    function saveDiary() {
+      const date = document.getElementById('date').value;
+      const text = document.getElementById('diaryText').value;
+      const mood = document.getElementById('mood').value;
+      const reason = document.getElementById('reason').value;
+      const improvement = document.getElementById('improvement').value;
+
+      if (!date) {
+        alert("Please select a date.");
+        return;
+      }
+
+      const diaryData = { text, mood, reason, improvement };
+      localStorage.setItem("diary_" + date, JSON.stringify(diaryData));
+      alert("Saved successfully.");
+    }
+
+    function clearDiary() {
+      const date = document.getElementById('date').value;
+      if (!date) {
+        alert("Please select a date.");
+        return;
+      }
+
+      localStorage.removeItem("diary_" + date);
+      alert("Deleted.");
+
+      document.getElementById('diaryText').value = "";
+      document.getElementById('mood').value = "";
+      document.getElementById('reason').value = "";
+      document.getElementById('improvement').value = "";
+      document.getElementById('preview').innerHTML = "";
+    }
+
+    function toggleDarkMode() {
+  const body = document.body;
+  const isDark = body.classList.toggle("dark");
+
+  document.querySelectorAll("input, textarea, select").forEach(el => {
+    if (isDark) {
+      el.classList.add("dark");
+    } else {
+      el.classList.remove("dark");
+    }
+  });
+
+  // Save mode to localStorage
+  localStorage.setItem("darkMode", isDark ? "on" : "off");
+}    const diaryText = document.getElementById("diaryText");
+    diaryText.addEventListener("input", updatePreview);
+
+    function updatePreview() {
+      const rawText = diaryText.value;
+      const html = marked.parse(rawText);
+      document.getElementById("preview").innerHTML = html;
+    }
+
+    function loadAllDiaries() {
+      const container = document.getElementById("allDiaries");
+      container.innerHTML = "";
+
+      const entries = [];
+
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith("diary_")) {
+          const date = key.replace("diary_", "");
+          const diaryData = JSON.parse(localStorage.getItem(key));
+          entries.push({ date, ...diaryData });
+        }
+      }
+
+      entries.sort((a, b) => b.date.localeCompare(a.date));
+
+      if (entries.length === 0) {
+        container.innerHTML = "<p>No diary entries found.</p>";
+        return;
+      }
+
+      for (const entry of entries) {
+        const section = document.createElement("section");
+        section.style.borderBottom = "1px solid #ccc";
+        section.style.padding = "10px 0";
+        section.innerHTML = `
+          <h3>📅 ${entry.date} (Feeling: ${entry.mood || "N/A"})</h3>
+          <p><strong>Reason:</strong> ${entry.reason || "N/A"}</p>
+          <p><strong>Improvement:</strong> ${entry.improvement || "N/A"}</p>
+          <div>${marked.parse(entry.text || "")}</div>
+        `;
+        container.appendChild(section);
+      }
+    }
+    // Load dark mode preference on page load
+window.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("darkMode") === "on") {
+    document.body.classList.add("dark");
+    document.querySelectorAll("input, textarea, select").forEach(el => {
+      el.classList.add("dark");
+    });
+  }
+});
+  </script>
+</body>
+</html>

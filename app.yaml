@@ -1,0 +1,11 @@
+runtime: nodejs20  # 最新のNode.jsランタイム
+
+instance_class: F1  # 無料枠対応
+
+handlers:
+  - url: /
+    static_files: public/index.html
+    upload: public/index.html
+
+  - url: /(.*)
+    static_dir: public
