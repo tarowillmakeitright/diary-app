@@ -93,6 +93,10 @@
     section {
       margin-bottom: 30px;
     }
+  
+    input.error, select.error {
+  border: 2px solid red;
+}
   </style>
 </head>
 <body>
@@ -109,36 +113,110 @@
   <input type="date" id="date">
   <br><br>
 
-  <label for="mood">Today's feeling:</label>
-  <select id="mood">
-    <option value="">--How are you today?--</option>
-    <option value="glad">Glad</option>
-    <option value="sad">Sad</option>
-    <option value="tired">Tired</option>
-    <option value="joyful">Joyful</option>
-    <option value="frustrated">Frustrated</option>
-  </select>
-  <br><br>
+<label for="mood">Today's feeling:</label>
+<select id="mood">
+  <option value="">--How are you today?--</option>
 
-  <label for="reason">What caused this feeling?</label>
-  <select id="reason">
-    <option value="">--What caused it?--</option>
+  <optgroup label="🌞 Positive">
+    <option value="happy">Happy</option>
+    <option value="excited">Excited</option>
+    <option value="motivated">Motivated</option>
+    <option value="thankful">Thankful</option>
+    <option value="peaceful">Peaceful</option>
+    <option value="relaxed">Relaxed</option>
+    <option value="confident">Confident</option>
+  </optgroup>
+
+  <optgroup label="🌧 Negative">
+    <option value="sad">Sad</option>
+    <option value="anxious">Anxious</option>
+    <option value="tired">Tired</option>
+    <option value="angry">Angry</option>
+    <option value="lonely">Lonely</option>
+    <option value="stressed">Stressed</option>
+    <option value="frustrated">Frustrated</option>
+  </optgroup>
+
+  <optgroup label="😐 Neutral / Mixed">
+    <option value="bored">Bored</option>
+    <option value="neutral">Neutral</option>
+    <option value="overwhelmed">Overwhelmed</option>
+    <option value="curious">Curious</option>
+    <option value="confused">Confused</option>
+  </optgroup>
+</select>
+  
+<label for="reason">What caused this feeling?</label>
+<select id="reason">
+  <option value="">--What caused it?--</option>
+
+  <optgroup label="🧠 Internal">
+    <option value="personal_thoughts">Personal thoughts</option>
+    <option value="self_doubt">Self-doubt</option>
+    <option value="overthinking">Overthinking</option>
+    <option value="expectations">Expectations</option>
+    <option value="lack_of_sleep">Lack of sleep</option>
+    <option value="physical_health">Physical health</option>
+  </optgroup>
+
+  <optgroup label="🌐 External">
     <option value="work">Work</option>
     <option value="family">Family</option>
     <option value="relationship">Relationship</option>
-    <option value="health">Health</option>
-  </select>
-  <br><br>
+    <option value="friends">Friends</option>
+    <option value="social_media">Social media</option>
+    <option value="school">School / Study</option>
+    <option value="finances">Finances</option>
+    <option value="weather">Weather</option>
+  </optgroup>
 
-  <label for="improvement">What did you do to feel better?</label>
-  <select id="improvement">
-    <option value="">--What helped?--</option>
+  <optgroup label="⚙️ Situational / Other">
+    <option value="no_reason">No specific reason</option>
+    <option value="routine">Daily routine</option>
+    <option value="unexpected_event">Unexpected event</option>
+    <option value="accomplishment">Accomplishment</option>
+    <option value="conflict">Conflict</option>
+    <option value="boredom">Boredom</option>
+  </optgroup>
+</select>
+
+<label for="improvement">What did you do to feel better?</label>
+<select id="improvement">
+  <option value="">--What helped?--</option>
+
+  <optgroup label="💪 Physical">
     <option value="exercise">Exercise</option>
+    <option value="walk">Walk</option>
     <option value="rest">Rest</option>
-    <option value="music">Listening to music</option>
-    <option value="friends">Talking to friends</option>
-  </select>
-  <br><br>
+    <option value="sleep">Sleep</option>
+    <option value="stretch">Stretch</option>
+    <option value="shower">Take a shower</option>
+  </optgroup>
+
+  <optgroup label="🧠 Mental / Emotional">
+    <option value="meditate">Meditate</option>
+    <option value="journal">Journal</option>
+    <option value="gratitude">Practice gratitude</option>
+    <option value="breathing">Deep breathing</option>
+    <option value="affirmations">Say affirmations</option>
+  </optgroup>
+
+  <optgroup label="🎨 Creative / Relaxing">
+    <option value="music">Listen to music</option>
+    <option value="art">Draw / Paint</option>
+    <option value="read">Read</option>
+    <option value="movie">Watch a movie</option>
+    <option value="game">Play a game</option>
+  </optgroup>
+
+  <optgroup label="🧑‍🤝‍🧑 Social">
+    <option value="friend">Talk to a friend</option>
+    <option value="family">Spend time with family</option>
+    <option value="vent">Vent to someone</option>
+    <option value="disconnect">Avoid social media</option>
+    <option value="help">Help someone else</option>
+  </optgroup>
+</select>
 
   <label for="diaryText">Diary (Markdown supported):</label>
   <textarea id="diaryText" rows="10" placeholder="# Write your thoughts here using Markdown..."></textarea>
@@ -155,21 +233,50 @@
 
   <script>
     function saveDiary() {
-      const date = document.getElementById('date').value;
-      const text = document.getElementById('diaryText').value;
-      const mood = document.getElementById('mood').value;
-      const reason = document.getElementById('reason').value;
-      const improvement = document.getElementById('improvement').value;
+  const dateInput = document.getElementById('date');
+  const moodSelect = document.getElementById('mood');
+  const reasonSelect = document.getElementById('reason');
+  const improvementSelect = document.getElementById('improvement');
 
-      if (!date) {
-        alert("Please select a date.");
-        return;
-      }
+  const date = dateInput.value;
+  const mood = moodSelect.value;
+  const reason = reasonSelect.value;
+  const improvement = improvementSelect.value;
+  const text = document.getElementById('diaryText').value;
 
-      const diaryData = { text, mood, reason, improvement };
-      localStorage.setItem("diary_" + date, JSON.stringify(diaryData));
-      alert("Saved successfully.");
-    }
+  // 初期化：前回のエラー枠をリセット
+  [dateInput, moodSelect, reasonSelect, improvementSelect].forEach(el => {
+    el.classList.remove("error");
+  });
+
+  let hasError = false;
+
+  if (!date) {
+    dateInput.classList.add("error");
+    hasError = true;
+  }
+  if (!mood) {
+    moodSelect.classList.add("error");
+    hasError = true;
+  }
+  if (!reason) {
+    reasonSelect.classList.add("error");
+    hasError = true;
+  }
+  if (!improvement) {
+    improvementSelect.classList.add("error");
+    hasError = true;
+  }
+
+  if (hasError) {
+    alert("Please complete all required fields: date, mood, reason, and improvement.");
+    return;
+  }
+
+  const diaryData = { text, mood, reason, improvement };
+  localStorage.setItem("diary_" + date, JSON.stringify(diaryData));
+  alert("Saved successfully.");
+}
 
     function clearDiary() {
       const date = document.getElementById('date').value;
