@@ -20,7 +20,7 @@
       padding: 20px;
     }
 
-    body.dark {
+   body.dark {
       background-color: #121212;
       color: #e0e0e0;
     }
@@ -97,15 +97,16 @@
     input.error, select.error {
   border: 2px solid red;
 }
+
+ul {
+  list-style: none;
+  padding-left: 0;
+}
   </style>
 </head>
 <body>
   <h1>Diary</h1>
-
-  <h2>・this dairy do not save in database.<h2>
-  <h2>・stranger can't see your dairy.<h2>
-  <h2>・it is yours.</h2>
-
+<div id="insights" style="margin: 40px auto; text-align: center; max-width: 600px;"></div>
   <button onclick="toggleDarkMode()">🌙</button>
   <br><br>
 
@@ -231,8 +232,9 @@
   <h3>📄 Preview</h3>
   <div id="preview"></div>
 
+
   <script>
-    function saveDiary() {
+function saveDiary() {
   const dateInput = document.getElementById('date');
   const moodSelect = document.getElementById('mood');
   const reasonSelect = document.getElementById('reason');
@@ -244,10 +246,8 @@
   const improvement = improvementSelect.value;
   const text = document.getElementById('diaryText').value;
 
-  // 初期化：前回のエラー枠をリセット
-  [dateInput, moodSelect, reasonSelect, improvementSelect].forEach(el => {
-    el.classList.remove("error");
-  });
+  // Remove previous error classes
+  [dateInput, moodSelect, reasonSelect, improvementSelect].forEach(el => el.classList.remove("error"));
 
   let hasError = false;
 
@@ -273,12 +273,20 @@
     return;
   }
 
-  const diaryData = { text, mood, reason, improvement };
-  localStorage.setItem("diary_" + date, JSON.stringify(diaryData));
-  alert("Saved successfully.");
-}
+  const key = "diary_" + date;
+  const existing = localStorage.getItem(key);
 
-    function clearDiary() {
+  if (existing) {
+    const confirmed = confirm("A diary entry for this date already exists. Do you want to overwrite it?");
+    if (!confirmed) return;
+  }
+
+  const diaryData = { text, mood, reason, improvement };
+  localStorage.setItem(key, JSON.stringify(diaryData));
+  alert("Saved successfully.");
+
+  analyzeDiaryStats();
+}    function clearDiary() {
       const date = document.getElementById('date').value;
       if (!date) {
         alert("Please select a date.");
@@ -331,6 +339,7 @@
           const diaryData = JSON.parse(localStorage.getItem(key));
           entries.push({ date, ...diaryData });
         }
+
       }
 
       entries.sort((a, b) => b.date.localeCompare(a.date));
@@ -362,6 +371,124 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+    function analyzeDiaryStats() {
+  const moods = [];
+  const actions = [];
+  const dateSet = new Set();
+
+ const POSITIVE = ['happy', 'joyful', 'excited', 'thankful', 'peaceful', 'relaxed', 'confident', 'motivated'];
+ const NEUTRAL  = ['calm', 'okay', 'neutral', 'fine', 'normal'];
+const NEGATIVE = ['sad', 'tired', 'angry', 'frustrated', 'anxious', 'lonely', 'stressed'];
+
+      for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith("diary_")) {
+      const date = key.replace("diary_", "");
+      const entry = JSON.parse(localStorage.getItem(key));
+      if (entry?.mood) moods.push({ date, mood: entry.mood });
+      if (entry?.improvement) actions.push(entry.improvement);
+      dateSet.add(date);
+    }
+  }
+
+  if (moods.length === 0) {
+    document.getElementById("insights").innerHTML = "<p>No analysis available yet.</p>";
+    return;
+  }
+
+  const dateList = Array.from(dateSet).sort();
+  const consecutiveDays = countConsecutiveDates(dateList);
+  const streaks = countMoodStreakExtended(moods, POSITIVE, NEUTRAL, NEGATIVE);
+  const topMoods = getTopCommon(moods.map(m => m.mood), 5);
+  const topActions = getTopCommon(actions, 10);
+
+  // HTML出力
+  let insightsHtml = `
+    <h3>📊 Insights</h3>
+    <p>📅 Written <strong>${consecutiveDays}</strong> days in a row.</p>
+    <p>🌞 Positive streak: <strong>${streaks.positive}</strong> days</p>
+    <p>😐 Neutral streak: <strong>${streaks.neutral}</strong> days</p>
+    <p>🌧 Negative streak: <strong>${streaks.negative}</strong> days</p>
+    <p>💬 Top 5 moods:</p>
+    <ul>${topMoods.map(m => `<li>${m.key} (${m.count})</li>`).join("")}</ul>
+    <p>🎯 Top helpful actions:</p>
+    <ul>${topActions.map(a => `<li>${a.key} (${a.count})</li>`).join("")}</ul>
+  `;
+
+  document.getElementById("insights").innerHTML = insightsHtml;
+}
+
+    function countConsecutiveDates(dates) {
+  let count = 1;
+  for (let i = dates.length - 1; i > 0; i--) {
+    const d1 = new Date(dates[i]);
+    const d2 = new Date(dates[i - 1]);
+    const diff = (d1 - d2) / (1000 * 60 * 60 * 24);
+    if (diff === 1) {
+      count++;
+    } else {
+      break;
+    }
+  }
+  return count;
+}
+
+    function countMoodStreakExtended(entries, POSITIVE, NEUTRAL, NEGATIVE) {
+  const sorted = entries.sort((a, b) => b.date.localeCompare(a.date));
+  let pos = 0, neu = 0, neg = 0;
+
+  for (const entry of sorted) {
+    if (POSITIVE.includes(entry.mood)) pos++;
+    else break;
+  }
+
+  for (const entry of sorted) {
+    if (NEUTRAL.includes(entry.mood)) neu++;
+    else break;
+  }
+
+  for (const entry of sorted) {
+    if (NEGATIVE.includes(entry.mood)) neg++;
+    else break;
+  }
+
+  return { positive: pos, neutral: neu, negative: neg };
+}
+
+    function getMostCommon(arr) {
+  const freq = {};
+  for (const item of arr) {
+    if (!item) continue;
+    freq[item] = (freq[item] || 0) + 1;
+  }
+
+  let maxCount = 0;
+  let most = null;
+  for (const key in freq) {
+    if (freq[key] > maxCount) {
+      maxCount = freq[key];
+      most = key;
+    }
+  }
+
+  return most;
+}
+
+    function getTopCommon(arr, topN = 5) {
+  const freq = {};
+  for (const item of arr) {
+    if (!item) continue;
+    freq[item] = (freq[item] || 0) + 1;
+  }
+
+  return Object.entries(freq)
+    .map(([key, count]) => ({ key, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, topN);
+}
+
+  
   </script>
 </body>
 </html>
