@@ -224,10 +224,10 @@ ul {
   <br><br>
 
   <button onclick="saveDiary()">Save</button>
+  <button onclick="copyAllDiaries()">📋 Copy All Diaries</button>
   <button onclick="loadAllDiaries()">🗂 View All</button>
   <div id="allDiaries"></div>
-  <button onclick="clearDiary()">Delete</button>
-  <br><br>
+ <br><br>
 
   <h3>📄 Preview</h3>
   <div id="preview"></div>
@@ -286,23 +286,7 @@ function saveDiary() {
   alert("Saved successfully.");
 
   analyzeDiaryStats();
-}    function clearDiary() {
-      const date = document.getElementById('date').value;
-      if (!date) {
-        alert("Please select a date.");
-        return;
-      }
-
-      localStorage.removeItem("diary_" + date);
-      alert("Deleted.");
-
-      document.getElementById('diaryText').value = "";
-      document.getElementById('mood').value = "";
-      document.getElementById('reason').value = "";
-      document.getElementById('improvement').value = "";
-      document.getElementById('preview').innerHTML = "";
-    }
-
+}    
     function toggleDarkMode() {
   const body = document.body;
   const isDark = body.classList.toggle("dark");
@@ -372,6 +356,41 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+function copyAllDiaries() {
+  const entries = [];
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith("diary_")) {
+      const date = key.replace("diary_", "");
+      const entry = JSON.parse(localStorage.getItem(key));
+      entries.push({ date, ...entry });
+    }
+  }
+
+  if (entries.length === 0) {
+    alert("No diary entries to copy.");
+    return;
+  }
+
+  // 最新順にソート
+  entries.sort((a, b) => b.date.localeCompare(a.date));
+
+  const fullText = entries.map(entry => 
+`📅 Date: ${entry.date}
+🌤 Mood: ${entry.mood || 'N/A'}
+📌 Reason: ${entry.reason || 'N/A'}
+🛠 Improvement: ${entry.improvement || 'N/A'}
+
+📝 Diary:
+${entry.text || '(No content)'}
+------------------------------------------------------------
+`).join("\n");
+
+  navigator.clipboard.writeText(fullText)
+    .then(() => alert("All diary entries copied!"))
+    .catch(() => alert("Copy failed."));
+}
     function analyzeDiaryStats() {
   const moods = [];
   const actions = [];
