@@ -15,8 +15,8 @@
     }
     body {
       font-family: 'Bitcount Prop Single';
-      background-color: white;
-      color: black;
+      background-color: black;
+      color: white;
       transition: background-color 0.3s, color 0.3s;
       margin: 0;
       padding: 20px;
@@ -58,47 +58,24 @@
       font-size: 1em;
     }
 
-    textarea.dark, input.dark, select.dark {
-      background-color: #1e1e1e;
-      color: #e0e0e0;
-      border: 1px solid #555;
-    }
-
-    button {
-      margin: 10px 5px 0 0;
-      padding: 10px;
-      font-size: 1em;
-      width: auto;
-      background-color: #eee;
-      border: none;
-      cursor: pointer;
-    }
-
-    body.dark button {
-      background-color: #444;
-      color: #eee;
-    }
-
-    #preview, #allDiaries {
-      margin-top: 30px;
-      padding: 15px;
-      border: 1px solid #ccc;
-      background-color: #f9f9f9;
-      word-wrap: break-word;
-    }
-
-    body.dark #preview, body.dark #allDiaries {
-      background-color: #1e1e1e;
-      border-color: #555;
-    }
 
     section {
       margin-bottom: 30px;
     }
   
-    input.error, select.error {
-  border: 2px solid red;
-}
+ button {
+    background-color: #333;
+    color: white;
+    border: 1px solid white;
+    padding: 8px 12px;
+    margin: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #555;
+  }
 
 ul {
   list-style: none;
@@ -119,8 +96,6 @@ ul {
 </head>
 <body>
   <h1>Diary</h1>
-<div id="insights" style="margin: 40px auto; text-align: center; max-width: 600px;"></div>
-  <button onclick="toggleDarkMode()">🌙</button>
   <br><br>
 
   <label for="date">Date:</label>
@@ -303,21 +278,7 @@ function saveDiary() {
 
   analyzeDiaryStats();
 }    
-    function toggleDarkMode() {
-  const body = document.body;
-  const isDark = body.classList.toggle("dark");
-
-  document.querySelectorAll("input, textarea, select").forEach(el => {
-    if (isDark) {
-      el.classList.add("dark");
-    } else {
-      el.classList.remove("dark");
-    }
-  });
-
-  // Save mode to localStorage
-  localStorage.setItem("darkMode", isDark ? "on" : "off");
-}    const diaryText = document.getElementById("diaryText");
+    const diaryText = document.getElementById("diaryText");
     diaryText.addEventListener("input", updatePreview);
 
     function updatePreview() {
@@ -351,8 +312,8 @@ function saveDiary() {
 
       for (const entry of entries) {
         const section = document.createElement("section");
-        section.style.borderBottom = "1px solid #ccc";
-        section.style.padding = "10px 0";
+        section.style.backgroundColor = "black"; //
+        section.style.color = "white";
         section.innerHTML = `
           <h3>📅 ${entry.date} (Feeling: ${entry.mood || "N/A"})</h3>
           <p><strong>Reason:</strong> ${entry.reason || "N/A"}</p>
@@ -363,15 +324,6 @@ function saveDiary() {
       }
       analyzeDiaryStats();
     }
-    // Load dark mode preference on page load
-window.addEventListener("DOMContentLoaded", () => {
-  if (localStorage.getItem("darkMode") === "on") {
-    document.body.classList.add("dark");
-    document.querySelectorAll("input, textarea, select").forEach(el => {
-      el.classList.add("dark");
-    });
-  }
-});
 
 function copyAllDiaries() {
   const entries = [];
