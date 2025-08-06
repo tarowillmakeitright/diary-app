@@ -102,6 +102,17 @@ ul {
   list-style: none;
   padding-left: 0;
 }
+    dialog {
+    border: none;
+    border-radius: 8px;
+    padding: 20px;
+    font-size: 1em;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  }
+  dialog::backdrop {
+    background: rgba(0, 0, 0, 0.4);
+  }
   </style>
 </head>
 <body>
@@ -222,7 +233,10 @@ ul {
   <label for="diaryText">Diary (Markdown supported):</label>
   <textarea id="diaryText" rows="10" placeholder="# Write your thoughts here using Markdown..."></textarea>
   <br><br>
-
+  <dialog id="messageDialog">
+  <p id="messageText"></p>
+  <button onclick="document.getElementById('messageDialog').close()">OK</button>
+   </dialog>
   <button onclick="saveDiary()">Save</button>
   <button onclick="copyAllDiaries()">📋 Copy All Diaries</button>
   <button onclick="loadAllDiaries()">🗂 View All</button>
@@ -269,7 +283,7 @@ function saveDiary() {
   }
 
   if (hasError) {
-    alert("Please complete all required fields: date, mood, reason, and improvement.");
+    showDialog("Please complete all required fields: date, mood, reason, and improvement.");
     return;
   }
 
@@ -283,7 +297,7 @@ function saveDiary() {
 
   const diaryData = { text, mood, reason, improvement };
   localStorage.setItem(key, JSON.stringify(diaryData));
-  alert("Saved successfully.");
+  showDialog("Saved successfully.");
 
   analyzeDiaryStats();
 }    
@@ -345,6 +359,7 @@ function saveDiary() {
         `;
         container.appendChild(section);
       }
+      analyzeDiaryStats();
     }
     // Load dark mode preference on page load
 window.addEventListener("DOMContentLoaded", () => {
@@ -369,7 +384,7 @@ function copyAllDiaries() {
   }
 
   if (entries.length === 0) {
-    alert("No diary entries to copy.");
+    showDialog("No diary entries to copy.");
     return;
   }
 
@@ -388,8 +403,8 @@ ${entry.text || '(No content)'}
 `).join("\n");
 
   navigator.clipboard.writeText(fullText)
-    .then(() => alert("All diary entries copied!"))
-    .catch(() => alert("Copy failed."));
+    .then(() => showDialog("All diary entries copied!"))
+    .catch(() => showDialog("Copy failed."));
 }
     function analyzeDiaryStats() {
   const moods = [];
@@ -507,7 +522,14 @@ const NEGATIVE = ['sad', 'tired', 'angry', 'frustrated', 'anxious', 'lonely', 's
     .slice(0, topN);
 }
 
-  
+// just ok dailog
+function showDialog(message) {
+  const dialog = document.getElementById('messageDialog');
+  const messageText = document.getElementById('messageText');
+  messageText.textContent = message;
+  dialog.showModal();
+}
+
   </script>
 </body>
 </html>
