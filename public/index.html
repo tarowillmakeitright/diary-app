@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diary</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@100..900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --main-width: 95%;
+      --max-width: 600px;
+    }
+    body {
+      font-family: 'Bitcount Prop Single';
+      background-color: white;
+      color: black;
+      transition: background-color 0.3s, color 0.3s;
+      margin: 0;
+      padding: 20px;
+    }
+
+   body.dark {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+
+    .container {
+      max-width: var(--max-width);
+      width: var(--main-width);
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 1.8em;
+      text-align: center;
+    }
+    
+     h2 {
+      font-size: 1.8em;
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+
+    textarea, input, select {
+      background-color: inherit;
+      color: inherit;
+      border: 1px solid #ccc;
+      padding: 10px;
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 1em;
+    }
+
+    textarea.dark, input.dark, select.dark {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+      border: 1px solid #555;
+    }
+
+    button {
+      margin: 10px 5px 0 0;
+      padding: 10px;
+      font-size: 1em;
+      width: auto;
+      background-color: #eee;
+      border: none;
+      cursor: pointer;
+    }
+
+    body.dark button {
+      background-color: #444;
+      color: #eee;
+    }
+
+    #preview, #allDiaries {
+      margin-top: 30px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      word-wrap: break-word;
+    }
+
+    body.dark #preview, body.dark #allDiaries {
+      background-color: #1e1e1e;
+      border-color: #555;
+    }
+
+    section {
+      margin-bottom: 30px;
+    }
+  
+    input.error, select.error {
+  border: 2px solid red;
+}
+
+ul {
+  list-style: none;
+  padding-left: 0;
+}
+    dialog {
+    border: none;
+    border-radius: 8px;
+    padding: 20px;
+    font-size: 1em;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  }
+  dialog::backdrop {
+    background: rgba(0, 0, 0, 0.4);
+  }
+  </style>
+</head>
+<body>
+  <h1>Diary</h1>
+<div id="insights" style="margin: 40px auto; text-align: center; max-width: 600px;"></div>
+  <button onclick="toggleDarkMode()">🌙</button>
+  <br><br>
+
+  <label for="date">Date:</label>
+  <input type="date" id="date">
+  <br><br>
+
+<label for="mood">Today's feeling:</label>
+<select id="mood">
+  <option value="">--How are you today?--</option>
+
+  <optgroup label="🌞 Positive">
+    <option value="happy">Happy</option>
+    <option value="excited">Excited</option>
+    <option value="motivated">Motivated</option>
+    <option value="thankful">Thankful</option>
+    <option value="peaceful">Peaceful</option>
+    <option value="relaxed">Relaxed</option>
+    <option value="confident">Confident</option>
+  </optgroup>
+
+  <optgroup label="🌧 Negative">
+    <option value="sad">Sad</option>
+    <option value="anxious">Anxious</option>
+    <option value="tired">Tired</option>
+    <option value="angry">Angry</option>
+    <option value="lonely">Lonely</option>
+    <option value="stressed">Stressed</option>
+    <option value="frustrated">Frustrated</option>
+  </optgroup>
+
+  <optgroup label="😐 Neutral / Mixed">
+    <option value="bored">Bored</option>
+    <option value="neutral">Neutral</option>
+    <option value="overwhelmed">Overwhelmed</option>
+    <option value="curious">Curious</option>
+    <option value="confused">Confused</option>
+  </optgroup>
+</select>
+  
+<label for="reason">What caused this feeling?</label>
+<select id="reason">
+  <option value="">--What caused it?--</option>
+
+  <optgroup label="🧠 Internal">
+    <option value="personal_thoughts">Personal thoughts</option>
+    <option value="self_doubt">Self-doubt</option>
+    <option value="overthinking">Overthinking</option>
+    <option value="expectations">Expectations</option>
+    <option value="lack_of_sleep">Lack of sleep</option>
+    <option value="physical_health">Physical health</option>
+  </optgroup>
+
+  <optgroup label="🌐 External">
+    <option value="work">Work</option>
+    <option value="family">Family</option>
+    <option value="relationship">Relationship</option>
+    <option value="friends">Friends</option>
+    <option value="social_media">Social media</option>
+    <option value="school">School / Study</option>
+    <option value="finances">Finances</option>
+    <option value="weather">Weather</option>
+  </optgroup>
+
+  <optgroup label="⚙️ Situational / Other">
+    <option value="no_reason">No specific reason</option>
+    <option value="routine">Daily routine</option>
+    <option value="unexpected_event">Unexpected event</option>
+    <option value="accomplishment">Accomplishment</option>
+    <option value="conflict">Conflict</option>
+    <option value="boredom">Boredom</option>
+  </optgroup>
+</select>
+
+<label for="improvement">What did you do to feel better?</label>
+<select id="improvement">
+  <option value="">--What helped?--</option>
+
+  <optgroup label="💪 Physical">
+    <option value="exercise">Exercise</option>
+    <option value="walk">Walk</option>
+    <option value="rest">Rest</option>
+    <option value="sleep">Sleep</option>
+    <option value="stretch">Stretch</option>
+    <option value="shower">Take a shower</option>
+  </optgroup>
+
+  <optgroup label="🧠 Mental / Emotional">
+    <option value="meditate">Meditate</option>
+    <option value="journal">Journal</option>
+    <option value="gratitude">Practice gratitude</option>
+    <option value="breathing">Deep breathing</option>
+    <option value="affirmations">Say affirmations</option>
+  </optgroup>
+
+  <optgroup label="🎨 Creative / Relaxing">
+    <option value="music">Listen to music</option>
+    <option value="art">Draw / Paint</option>
+    <option value="read">Read</option>
+    <option value="movie">Watch a movie</option>
+    <option value="game">Play a game</option>
+  </optgroup>
+
+  <optgroup label="🧑‍🤝‍🧑 Social">
+    <option value="friend">Talk to a friend</option>
+    <option value="family">Spend time with family</option>
+    <option value="vent">Vent to someone</option>
+    <option value="disconnect">Avoid social media</option>
+    <option value="help">Help someone else</option>
+  </optgroup>
+</select>
+
+  <label for="diaryText">Diary (Markdown supported):</label>
+  <textarea id="diaryText" rows="10" placeholder="# Write your thoughts here using Markdown..."></textarea>
+  <br><br>
+  <dialog id="messageDialog">
+  <p id="messageText"></p>
+  <button onclick="document.getElementById('messageDialog').close()">OK</button>
+   </dialog>
+  <button onclick="saveDiary()">Save</button>
+  <button onclick="copyAllDiaries()">📋 Copy All Diaries</button>
+  <button onclick="loadAllDiaries()">🗂 View All</button>
+  <div id="allDiaries"></div>
+ <br><br>
+
+  <h3>📄 Preview</h3>
+  <div id="preview"></div>
+
+
+  <script>
+function saveDiary() {
+  const dateInput = document.getElementById('date');
+  const moodSelect = document.getElementById('mood');
+  const reasonSelect = document.getElementById('reason');
+  const improvementSelect = document.getElementById('improvement');
+
+  const date = dateInput.value;
+  const mood = moodSelect.value;
+  const reason = reasonSelect.value;
+  const improvement = improvementSelect.value;
+  const text = document.getElementById('diaryText').value;
+
+  // Remove previous error classes
+  [dateInput, moodSelect, reasonSelect, improvementSelect].forEach(el => el.classList.remove("error"));
+
+  let hasError = false;
+
+  if (!date) {
+    dateInput.classList.add("error");
+    hasError = true;
+  }
+  if (!mood) {
+    moodSelect.classList.add("error");
+    hasError = true;
+  }
+  if (!reason) {
+    reasonSelect.classList.add("error");
+    hasError = true;
+  }
+  if (!improvement) {
+    improvementSelect.classList.add("error");
+    hasError = true;
+  }
+
+  if (hasError) {
+    showDialog("Please complete all required fields: date, mood, reason, and improvement.");
+    return;
+  }
+
+  const key = "diary_" + date;
+  const existing = localStorage.getItem(key);
+
+  if (existing) {
+    const confirmed = confirm("A diary entry for this date already exists. Do you want to overwrite it?");
+    if (!confirmed) return;
+  }
+
+  const diaryData = { text, mood, reason, improvement };
+  localStorage.setItem(key, JSON.stringify(diaryData));
+  showDialog("Saved successfully.");
+
+  analyzeDiaryStats();
+}    
+    function toggleDarkMode() {
+  const body = document.body;
+  const isDark = body.classList.toggle("dark");
+
+  document.querySelectorAll("input, textarea, select").forEach(el => {
+    if (isDark) {
+      el.classList.add("dark");
+    } else {
+      el.classList.remove("dark");
+    }
+  });
+
+  // Save mode to localStorage
+  localStorage.setItem("darkMode", isDark ? "on" : "off");
+}    const diaryText = document.getElementById("diaryText");
+    diaryText.addEventListener("input", updatePreview);
+
+    function updatePreview() {
+      const rawText = diaryText.value;
+      const html = marked.parse(rawText);
+      document.getElementById("preview").innerHTML = html;
+    }
+
+    function loadAllDiaries() {
+      const container = document.getElementById("allDiaries");
+      container.innerHTML = "";
+
+      const entries = [];
+
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith("diary_")) {
+          const date = key.replace("diary_", "");
+          const diaryData = JSON.parse(localStorage.getItem(key));
+          entries.push({ date, ...diaryData });
+        }
+
+      }
+
+      entries.sort((a, b) => b.date.localeCompare(a.date));
+
+      if (entries.length === 0) {
+        container.innerHTML = "<p>No diary entries found.</p>";
+        return;
+      }
+
+      for (const entry of entries) {
+        const section = document.createElement("section");
+        section.style.borderBottom = "1px solid #ccc";
+        section.style.padding = "10px 0";
+        section.innerHTML = `
+          <h3>📅 ${entry.date} (Feeling: ${entry.mood || "N/A"})</h3>
+          <p><strong>Reason:</strong> ${entry.reason || "N/A"}</p>
+          <p><strong>Improvement:</strong> ${entry.improvement || "N/A"}</p>
+          <div>${marked.parse(entry.text || "")}</div>
+        `;
+        container.appendChild(section);
+      }
+      analyzeDiaryStats();
+    }
+    // Load dark mode preference on page load
+window.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("darkMode") === "on") {
+    document.body.classList.add("dark");
+    document.querySelectorAll("input, textarea, select").forEach(el => {
+      el.classList.add("dark");
+    });
+  }
+});
+
+function copyAllDiaries() {
+  const entries = [];
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith("diary_")) {
+      const date = key.replace("diary_", "");
+      const entry = JSON.parse(localStorage.getItem(key));
+      entries.push({ date, ...entry });
+    }
+  }
+
+  if (entries.length === 0) {
+    showDialog("No diary entries to copy.");
+    return;
+  }
+
+  // 最新順にソート
+  entries.sort((a, b) => b.date.localeCompare(a.date));
+
+  const fullText = entries.map(entry => 
+`📅 Date: ${entry.date}
+🌤 Mood: ${entry.mood || 'N/A'}
+📌 Reason: ${entry.reason || 'N/A'}
+🛠 Improvement: ${entry.improvement || 'N/A'}
+
+📝 Diary:
+${entry.text || '(No content)'}
+------------------------------------------------------------
+`).join("\n");
+
+  navigator.clipboard.writeText(fullText)
+    .then(() => showDialog("All diary entries copied!"))
+    .catch(() => showDialog("Copy failed."));
+}
+    function analyzeDiaryStats() {
+  const moods = [];
+  const actions = [];
+  const dateSet = new Set();
+
+ const POSITIVE = ['happy', 'joyful', 'excited', 'thankful', 'peaceful', 'relaxed', 'confident', 'motivated'];
+ const NEUTRAL  = ['calm', 'okay', 'neutral', 'fine', 'normal'];
+const NEGATIVE = ['sad', 'tired', 'angry', 'frustrated', 'anxious', 'lonely', 'stressed'];
+
+      for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith("diary_")) {
+      const date = key.replace("diary_", "");
+      const entry = JSON.parse(localStorage.getItem(key));
+      if (entry?.mood) moods.push({ date, mood: entry.mood });
+      if (entry?.improvement) actions.push(entry.improvement);
+      dateSet.add(date);
+    }
+  }
+
+  if (moods.length === 0) {
+    document.getElementById("insights").innerHTML = "<p>No analysis available yet.</p>";
+    return;
+  }
+
+  const dateList = Array.from(dateSet).sort();
+  const consecutiveDays = countConsecutiveDates(dateList);
+  const streaks = countMoodStreakExtended(moods, POSITIVE, NEUTRAL, NEGATIVE);
+  const topMoods = getTopCommon(moods.map(m => m.mood), 5);
+  const topActions = getTopCommon(actions, 10);
+
+  // HTML出力
+  let insightsHtml = `
+    <h3>📊 Insights</h3>
+    <p>📅 Written <strong>${consecutiveDays}</strong> days in a row.</p>
+    <p>🌞 Positive streak: <strong>${streaks.positive}</strong> days</p>
+    <p>😐 Neutral streak: <strong>${streaks.neutral}</strong> days</p>
+    <p>🌧 Negative streak: <strong>${streaks.negative}</strong> days</p>
+    <p>💬 Top 5 moods:</p>
+    <ul>${topMoods.map(m => `<li>${m.key} (${m.count})</li>`).join("")}</ul>
+    <p>🎯 Top helpful actions:</p>
+    <ul>${topActions.map(a => `<li>${a.key} (${a.count})</li>`).join("")}</ul>
+  `;
+
+  document.getElementById("insights").innerHTML = insightsHtml;
+}
+
+    function countConsecutiveDates(dates) {
+  let count = 1;
+  for (let i = dates.length - 1; i > 0; i--) {
+    const d1 = new Date(dates[i]);
+    const d2 = new Date(dates[i - 1]);
+    const diff = (d1 - d2) / (1000 * 60 * 60 * 24);
+    if (diff === 1) {
+      count++;
+    } else {
+      break;
+    }
+  }
+  return count;
+}
+
+    function countMoodStreakExtended(entries, POSITIVE, NEUTRAL, NEGATIVE) {
+  const sorted = entries.sort((a, b) => b.date.localeCompare(a.date));
+  let pos = 0, neu = 0, neg = 0;
+
+  for (const entry of sorted) {
+    if (POSITIVE.includes(entry.mood)) pos++;
+    else break;
+  }
+
+  for (const entry of sorted) {
+    if (NEUTRAL.includes(entry.mood)) neu++;
+    else break;
+  }
+
+  for (const entry of sorted) {
+    if (NEGATIVE.includes(entry.mood)) neg++;
+    else break;
+  }
+
+  return { positive: pos, neutral: neu, negative: neg };
+}
+
+    function getMostCommon(arr) {
+  const freq = {};
+  for (const item of arr) {
+    if (!item) continue;
+    freq[item] = (freq[item] || 0) + 1;
+  }
+
+  let maxCount = 0;
+  let most = null;
+  for (const key in freq) {
+    if (freq[key] > maxCount) {
+      maxCount = freq[key];
+      most = key;
+    }
+  }
+
+  return most;
+}
+
+    function getTopCommon(arr, topN = 5) {
+  const freq = {};
+  for (const item of arr) {
+    if (!item) continue;
+    freq[item] = (freq[item] || 0) + 1;
+  }
+
+  return Object.entries(freq)
+    .map(([key, count]) => ({ key, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, topN);
+}
+
+// just ok dailog
+function showDialog(message) {
+  const dialog = document.getElementById('messageDialog');
+  const messageText = document.getElementById('messageText');
+  messageText.textContent = message;
+  dialog.showModal();
+}
+
+  </script>
+</body>
+</html>
