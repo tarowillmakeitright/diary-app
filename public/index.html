@@ -219,6 +219,11 @@ ul {
   <p id="messageText"></p>
   <button onclick="document.getElementById('messageDialog').close()">OK</button>
    </dialog>
+   <dialog id="confirmDialog">
+  <p id="confirmMessage">Do you want to save?</p>
+  <button id="confirmYes">Yes</button>
+  <button id="confirmNo">Cancel</button>
+</dialog>
   <button onclick="saveDiary()">Save</button>
   <button onclick="copyAllDiaries()">📋 Copy All Diaries</button>
   <button onclick="loadAllDiaries()">🗂 View All</button>
@@ -230,7 +235,7 @@ ul {
 
 
   <script>
-function saveDiary() {
+async function saveDiary() {
   const dateInput = document.getElementById('date');
   const moodSelect = document.getElementById('mood');
   const reasonSelect = document.getElementById('reason');
@@ -273,9 +278,10 @@ function saveDiary() {
   const existing = localStorage.getItem(key);
 
   if (existing) {
-    const confirmed = confirm("A diary entry for this date already exists. Do you want to overwrite it?");
-    if (!confirmed) return;
+    const confirmed = await confirmDialog(" Do you want to overwrite?");
+    if (!confirmed) return;   
   }
+
 
   const diaryData = { text, mood, reason, improvement };
   localStorage.setItem(key, JSON.stringify(diaryData));
@@ -489,6 +495,27 @@ function showDialog(message) {
   dialog.showModal();
 }
 
+function confirmDialog(message) {
+  return new Promise((resolve) => {
+    const dialog = document.getElementById("confirmDialog");
+    const messageText = document.getElementById("confirmMessage");
+    const yesButton = document.getElementById("confirmYes");
+    const noButton = document.getElementById("confirmNo");
+
+    messageText.textContent = message;
+
+    dialog.showModal();
+
+    yesButton.onclick = () => {
+      dialog.close();
+      resolve(true);
+    };
+    noButton.onclick = () => {
+      dialog.close();
+      resolve(false);
+    };
+  });
+}
   </script>
 </body>
 </html>
