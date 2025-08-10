@@ -210,7 +210,7 @@
   <div style="margin-top: 10px;">
     <button type="button" onclick="saveDiary()">Save</button>
     <button type="button" onclick="copyAllDiaries()">📋 Copy All Diaries</button>
-    <button type="button" onclick="loadAllDiaries()">🗂 View All</button>
+    <button id="toggleAllButton" onclick="toggleViewAll(this)">🗂 View All</button>
   </div>
 
   <div id="allDiaries"></div>
@@ -352,6 +352,23 @@
 
       analyzeDiaryStats();
     }
+    //ViewAll()ボタンのDiary全体表示/非表示に設定
+    function toggleViewAll(btn) {
+  const container = document.getElementById("allDiaries");
+  const isOpen = container.dataset.open === "true";
+
+  if (isOpen) {
+    // 閉じる：中身を消してフラグ更新
+    container.innerHTML = "";
+    container.dataset.open = "false";
+    btn.textContent = "🗂 View All";
+  } else {
+    // 開く：既存の描画関数を利用
+    loadAllDiaries();
+    container.dataset.open = "true";
+    btn.textContent = "🙈 Hide";
+  }
+}
 
     // ---------- Copy All ----------
     function copyAllDiaries() {
